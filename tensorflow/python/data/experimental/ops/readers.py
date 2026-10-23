@@ -64,7 +64,9 @@ def _is_valid_int64(str_val):
 
 def _is_valid_float(str_val, float_dtype):
   try:
-    return float_dtype.as_numpy_dtype(str_val) < np.inf
+    # Overflow turns a number into inf, but "nan" and "inf" are valid floats.
+    value = float_dtype.as_numpy_dtype(str_val)
+    return np.isfinite(value) or not np.isfinite(float(str_val))
   except ValueError:
     return False
 

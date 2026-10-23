@@ -546,6 +546,30 @@ class MakeCsvDatasetTest(test_base.DatasetTestBase, parameterized.TestCase):
     )
 
   @combinations.generate(test_base.default_test_combinations())
+  def testWithTypeInferenceNanAndInf(self):
+    """Tests that nan and inf values are inferred as floats."""
+    column_names = ["col%d" % i for i in range(4)]
+    inputs = [[
+        ",".join(x for x in column_names),
+        "0,1.5,nan,1e40",
+        "1,inf,NaN,-inf",
+    ]]
+    expected_output = [[0, 1.5, np.nan, 1e40], [1, np.inf, np.nan, -np.inf]]
+    label = "col0"
+
+    self._test_dataset(
+        inputs,
+        expected_output=expected_output,
+        expected_keys=column_names,
+        column_names=column_names,
+        label_name=label,
+        batch_size=1,
+        num_epochs=1,
+        shuffle=False,
+        header=True,
+    )
+
+  @combinations.generate(test_base.default_test_combinations())
   def testWithNAValuesAndFieldDelim(self):
     """Tests that datasets can be created from different delim and na_value."""
     column_names = ["col%d" % i for i in range(5)]
