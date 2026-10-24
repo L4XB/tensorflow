@@ -1875,10 +1875,19 @@ def _resize_image_with_pad_common(image, target_height, target_width,
     ratio = max_(f_width / f_target_width, f_height / f_target_height)
     resized_height_float = f_height / ratio
     resized_width_float = f_width / ratio
+    # Compute the resized size with integers: in float32, `f_height / ratio`
+    # can land just below a whole number (512 / (512 / 224) = 223.99998), and
+    # flooring it would lose a row or column that fits the target.
+    i_height = math_ops.cast(height, dtype=dtypes.int64)
+    i_width = math_ops.cast(width, dtype=dtypes.int64)
+    i_target_height = math_ops.cast(target_height, dtype=dtypes.int64)
+    i_target_width = math_ops.cast(target_width, dtype=dtypes.int64)
     resized_height = math_ops.cast(
-        math_ops.floor(resized_height_float), dtype=dtypes.int32)
+        math_ops.minimum(i_target_height, i_height * i_target_width // i_width),
+        dtype=dtypes.int32)
     resized_width = math_ops.cast(
-        math_ops.floor(resized_width_float), dtype=dtypes.int32)
+        math_ops.minimum(i_target_width, i_width * i_target_height // i_height),
+        dtype=dtypes.int32)
 
     padding_height = (f_target_height - resized_height_float) / 2
     padding_width = (f_target_width - resized_width_float) / 2

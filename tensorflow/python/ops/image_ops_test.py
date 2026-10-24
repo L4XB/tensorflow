@@ -4229,6 +4229,22 @@ class ResizeImageWithPadV2Test(test_util.TensorFlowTestCase):
 
     self._assertReturns(x, x_shape, y, y_shape)
 
+  def testPadKeepsTheWholeResizedImage(self):
+    # In float32, 512 / (512 / 224) is 223.99998, which used to lose the last
+    # row and column of a 512x512 image resized to 224x224.
+    for x_shape, target_height, target_width, footprint in [
+        ([512, 512, 1], 224, 224, (224, 224)),
+        ([224, 256, 1], 224, 224, (196, 224)),
+        ([768, 1024, 1], 224, 224, (168, 224)),
+    ]:
+      x = np.ones(x_shape, dtype=np.float32)
+      for use_tensor_inputs in [False, True]:
+        y = self._ResizeImageWithPad(x, target_height, target_width,
+                                     use_tensor_inputs)
+        rows = np.count_nonzero(y.any(axis=(1, 2)))
+        cols = np.count_nonzero(y.any(axis=(0, 2)))
+        self.assertEqual((rows, cols), footprint)
+
 
 class ResizeNearestNeighborGrad(test_util.TensorFlowTestCase):
 
