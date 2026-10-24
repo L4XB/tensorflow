@@ -1757,6 +1757,17 @@ class ArrayMethodsTest(test.TestCase):
     with self.assertRaisesRegex(errors_impl.InvalidArgumentError, kernel_err):
       self.evaluate(flip_unknown_rank_invalid_pos(a))
 
+  def testTrilTriu(self):
+    # Boolean matrices are the usual way to build causal attention masks.
+    for dtype in (np.float32, np.int32, np.bool_):
+      m = (np.arange(12).reshape(3, 4) % 5).astype(dtype)
+      for k in (-1, 0, 1):
+        self.assertAllEqual(np.tril(m, k=k), np_array_ops.tril(m, k=k))
+        self.assertAllEqual(np.triu(m, k=k), np_array_ops.triu(m, k=k))
+    mask = np_array_ops.tril(np.ones((2, 3, 3), dtype=np.bool_))
+    self.assertEqual(mask.dtype, dtypes.bool)
+    self.assertAllEqual(np.tril(np.ones((2, 3, 3), dtype=np.bool_)), mask)
+
   def testRoll(self):
     np.random.seed(0)
     random_seed.set_seed(0)

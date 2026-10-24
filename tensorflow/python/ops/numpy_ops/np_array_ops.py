@@ -1718,7 +1718,7 @@ def tril(m, k=0):  # pylint: disable=missing-docstring
         'need to be known.'
     )
 
-  z = constant_op.constant(0, m.dtype)
+  z = array_ops.zeros([], m.dtype)
 
   mask = tri(*m_shape[-2:], k=k, dtype=bool)
   return array_ops.where_v2(
@@ -1743,7 +1743,7 @@ def triu(m, k=0):  # pylint: disable=missing-docstring
         'need to be known.'
     )
 
-  z = constant_op.constant(0, m.dtype)
+  z = array_ops.zeros([], m.dtype)
 
   mask = tri(*m_shape[-2:], k=k - 1, dtype=bool)
   return array_ops.where_v2(
