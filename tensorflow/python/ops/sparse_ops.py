@@ -3163,6 +3163,10 @@ def bincount(arr: sparse_tensor.SparseTensor,
 
     if not arr.dtype.is_integer:
       arr = math_ops.cast(arr, dtypes.int32)
+    elif arr.dtype not in (dtypes.int32, dtypes.int64):
+      # The bincount ops only take int32 and int64 values, e.g. not the uint8
+      # of a decoded image.
+      arr = math_ops.cast(arr, dtypes.int64)
     if axis is None:
       axis = 0
 

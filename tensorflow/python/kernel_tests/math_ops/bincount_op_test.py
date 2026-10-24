@@ -62,6 +62,24 @@ class BincountTest(test_util.TensorFlowTestCase):
           [0, 0, 0, 0, 0],
       )
 
+  def test_small_integer_dtypes(self):
+    # Decoded images are uint8, and compact token ids are often uint16.
+    for dtype, values in [
+        (np.uint8, [[1, 3, 255], [3, 3, 7]]),
+        (np.uint16, [[1, 3, 255], [3, 3, 7]]),
+        (np.uint32, [[1, 3, 255], [3, 3, 7]]),
+        (np.int8, [[1, 3, 127], [3, 3, 7]]),
+        (np.int16, [[1, 3, 255], [3, 3, 7]]),
+    ]:
+      expected = np.bincount(np.ravel(values))
+      arr = np.array(values, dtype=dtype)
+      for inp in (
+          arr,
+          ragged_factory_ops.constant(values, dtype=dtypes.as_dtype(dtype)),
+          sparse_ops.from_dense(arr),
+      ):
+        self.assertAllEqual(expected, self.evaluate(bincount_ops.bincount(inp)))
+
   def test_values(self):
     with self.session():
       self.assertAllEqual(
